@@ -137,8 +137,8 @@
             etatsParJour[jour] = { 
               gentil: 0, 
               mechant: 0,
-              gourou: 0,  // Ajout du compteur pour les gourous
-              disciple: 0 // Ajout du compteur pour les disciples
+              gourou: 0,  
+              disciple: 0 
             };
             vivantsParJour[jour] = new Set();
           }
@@ -172,7 +172,7 @@
           }
         });
 
-        // Affichage des statistiques
+        
         const res = `👥 Personnages au début : ${vivantsInitial}
 ☠️ Morts : ${morts}
 ❤️ Survivants : ${vivantsFinal}
@@ -180,7 +180,7 @@
 🔄 Méchant → Gentil : ${mechantToGentil}`;
         document.getElementById("resultat").textContent = res;
 
-        // Création de la courbe d'évolution
+        
         const jours = Object.keys(etatsParJour).map(j => parseInt(j)).sort((a, b) => a - b);
         const dataGentils = jours.map(j => etatsParJour[j]?.gentil || 0);
         const dataMechants = jours.map(j => etatsParJour[j]?.mechant || 0);

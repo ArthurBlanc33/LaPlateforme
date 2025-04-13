@@ -12,6 +12,9 @@
 
 ---
 
+## Utilisation 
+Tout se trouve dans le dossier p2i il suffit simplement de lancer le fichier Html ou de télécharger une extention dans votre IDE (Go live). Le projet est disponible en ligne avec le lien au dessus.
+
 ## Fonctionnalités
 
 - Simulation jour par jour des comportements

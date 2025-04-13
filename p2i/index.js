@@ -8,11 +8,11 @@ console.log("Démarrage de la simulation");
 // });
 
 class Personnage {
-    static currentId = 0; // Static variable to keep track of the current ID
+    static currentId = 0; 
     constructor(etat) {
         this.id = Personnage.currentId++; // identifiant unique
         this.etat = etat;
-        this.faim = 0; // S'assure que la faim initiale n'est pas négative
+        this.faim = 0; 
         this.life = 10;
         this.influenceScore = 0;
         this.influencable = generationInfluencable();
@@ -34,12 +34,11 @@ class Personnage {
 
 
     determinerEtat(autrePersonnage) {
-        // Si l'autre personnage existe
+        
         if (autrePersonnage) {
-            // Confrontation d'influence entre personnages de types opposés
+            
             if (this.etat !== autrePersonnage.etat) {
-                // Calculer la force d'influence de chaque personnage
-                // Facteurs qui peuvent affecter la force: vie, faim, influençabilité
+               
                 const forceThisPersonnage = this.calculerForceInfluence();
                 const forceAutrePersonnage = autrePersonnage.calculerForceInfluence();
 
@@ -78,17 +77,13 @@ class Personnage {
         }
     }
 
-    // Nouvelle méthode pour calculer la force d'influence d'un personnage
+ 
     calculerForceInfluence() {
-        // Facteurs qui déterminent la force d'influence:
-        // - Vie (plus de vie = plus d'influence)
-        // - Faim (moins de faim = plus d'influence)
-        // - État (on peut supposer que les méchants sont plus influents dans certaines situations)
-        // - Un facteur aléatoire pour plus de variabilité
+       
 
-        const forceSanté = this.life / 10; // Force proportionnelle à la vie (max 10)
-        const forceFaim = 1 - (this.faim / 15); // Moins de faim = plus de force
-        const forceEtat = this.etat === "mechant" ? 1.2 : 1.0; // Les méchants peuvent être légèrement plus intimidants
+        const forceSanté = this.life / 10; 
+        const forceFaim = 1 - (this.faim / 15);
+        const forceEtat = this.etat === "mechant" ? 1.2 : 1.0; 
         const facteurAleatoire = 0.8 + (Math.random() * 0.4); // Entre 0.8 et 1.2
 
         return (forceSanté + forceFaim) * forceEtat * facteurAleatoire;
@@ -282,8 +277,7 @@ function Repartition(TourPrincipale, Persos) {
 }
 
 
-//Gourou
-// Add this global variable at the top of your script
+
 let gourouExists = false;
 
 // Then modify your verifierApparitionGourou function
@@ -375,7 +369,7 @@ function exporterCSV(data, simulationNom = "simulation_resultats") {
         csvContent += `${id},${simulation},${jour},${etage},${etat},${vie},${faim},${influencable}\n`;
     });
 
-    // Créer un Blob et déclencher le téléchargement
+   
     let blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
 
     // Pour les environnements de navigateur
@@ -396,7 +390,16 @@ function exporterCSV(data, simulationNom = "simulation_resultats") {
     }
 }
 
-// Add this function to safely check if a character exists before accessing its properties
+
+let nbtemps = 2000;
+
+
+skip.onclick = function () {
+    nbtemps = 0;
+};
+
+
+
 function isValidPersonnage(personnage) {
     return personnage !== undefined && personnage !== null;
 }
@@ -785,28 +788,6 @@ async function Simulation(TourPrincipale, Persos, numSimulation = 1, nbJours = 1
 }
 
 
-// Démarrage de la simulation sans html
-
-
-// readline.question('Entrez le nombre d\'étages souhaité : ', (input) => {
-//     const nbetages = parseInt(input) || 10;
-//     console.log(`\nCréation d'une tour avec ${nbetages} étages`);
-
-//     const TourPrincipale = new Tour(nbetages);
-//     const Persos = CreationPerso(TourPrincipale);
-
-//     console.log("\nPersonnages créés :");
-//     Persos.forEach((p, i) => console.log(`${i + 1}: ${p.etat} (faim: ${p.faim})`));
-
-//     console.log("\nRépartition des personnages dans la tour...");
-//     Repartition(TourPrincipale, Persos);
-
-//     console.log("\nDémarrage de la simulation...\n");
-//     Simulation(TourPrincipale, Persos);
-
-//     readline.close();
-// });
-
 
 let nbetages;  // Déclaration globale
 let etagesElements = [];  // Liste globale des éléments d'étage
@@ -906,39 +887,5 @@ function affichageDom() {
 
 
 
-let nbtemps = 2000;
 
-
-
-// let skip = document.getElementById('skip');
-skip.onclick = function () {
-    nbtemps = 0;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// document.getElementById('simulationForm').onsubmit = function(e) {
-//     e.preventDefault();
-//     const nbEtages = parseInt(document.getElementById('nbEtages').value);
-//     // Ici, vous pouvez appeler votre fonction de simulation avec nbEtages
-//     console.log("Nombre d'étages choisi :", nbEtages);
-// };
-
-
-
-// Affichage de la tour
 
