@@ -1,22 +1,43 @@
-# LaPlateforme
+# 🧪 La Plateforme — Simulation Multi-Agent
 
-Ce projet est une simulation des comportements humains observés dans le film **La Plateforme**, développée en JavaScript. Il modélise les dynamiques sociales, les prises de décision, et les interactions entre individus dans un environnement hiérarchique.
+## Présentation
 
-## Contexte
-Dans le film, des individus sont placés sur des niveaux d'une tour verticale où une plateforme descend avec de la nourriture. Les comportements des personnages varient en fonction de leur niveau (haut, milieu, bas) et des ressources disponibles.
+**La Plateforme** est une simulation interactive inspirée du film éponyme. Des personnages répartis sur plusieurs étages interagissent selon leur état : **gentil**, **méchant**, **gourou** ou **disciple**. Le but est d'observer l'évolution de ces dynamiques dans un environnement contraint.
 
-Ce projet vise à reproduire ces interactions et décisions :
-- Coopération ou égoïsme face à la pénurie.
-- Impact des ressources sur le comportement.
-- Réactions des individus à la montée ou à la descente de niveau.
+---
+
+## 🔗 Accès au site
+
+👉 [https://laplateforme.netlify.app](https://laplateforme.netlify.app)
+
+---
 
 ## Fonctionnalités
-- **Simulation de la plateforme** :
-  - Une plateforme descend de niveau en niveau, avec des ressources limitées.
-  - Les ressources diminuent à chaque niveau en fonction de la consommation des personnages.
-- **Modélisation des personnages** :
-  - Chaque personnage a des caractéristiques : faim, moralité, agressivité.
-  - Le comportement peut changer en fonction de la situation (coopération, égoïsme, violence).
-- **Hiérarchie et aléatoire** :
-  - Les personnages changent de niveau à chaque cycle, simulant l'injustice du système.
-  - L'aléatoire joue un rôle important dans les affectations de niveau.
+
+- Simulation jour par jour des comportements
+- États dynamiques avec interactions (endoctrinement, combat, faim)
+- Export des résultats au format CSV
+- Outil d’analyse intégré avec graphiques (Chart.js)
+
+---
+
+## Structure
+
+- `index.html` : page de simulation
+- `analyse.html` : analyse des résultats
+- `index.js` : moteur de simulation
+- `style.css` : styles de l’interface
+
+---
+
+## Utilisation
+
+1. Lancer une simulation via `index.html`
+2. Exporter les résultats
+3. Les analyser via `analyse.html`
+
+---
+
+## Auteur
+
+ablanc013@ensc.Fr
