@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Simulation de la Tour</title>
+        <link rel="stylesheet" href="style.css">
+        <script defer src="https://cdn.jsdelivr.net/npm/chart.js"
+            defer></script>
+        <script defer src="index.js"></script>
+    </head>
+    <body>
+        <nav>
+            <ul>
+                <li><a href="index.html">Simulation de la Tour</a></li>
+                <li><a href="analyse.html">Analyse de la Tour</a></li>
+            
+            </ul>
+        </nav>
+
+        <div class="container">
+            <h2>Simulation de la Tour</h2>
+
+            
+            <form id="simulationForm">
+                <label for="nbSimulation">Nombre de Simulation :</label>
+                <input type="number" id="nbSimulation" min="1" value="1"
+                    required>
+                <br>
+
+                <label for="nbEtages">Nombre d'étages :</label>
+                <br>
+                <input type="number" id="nbEtages" min="1" value="10" required>
+                <br>
+
+                <label for="nbJours">Nombre de jours par simulation :</label>
+                <input type="number" id="nbJours" min="1" value="15" required>
+                <br>
+
+                <h3>Choisissez la distribution :</h3>
+
+                <div>
+                    <input type="radio" id="uniforme" name="distribution"
+                        value="uniforme" checked>
+                    <label for="uniforme">Uniforme</label>
+                </div>
+
+                <div>
+                    <input type="radio" id="normale" name="distribution"
+                        value="normale">
+                    <label for="normale">Normale</label>
+                </div>
+
+                <div id="normaleParams" style="display: none;">
+                    <label for="mean">Moyenne :</label>
+                    <input type="number" id="mean" step="0.1" value="0.5">
+                    <br>
+
+                    <label for="stdDev">Écart-type :</label>
+                    <input type="number" id="stdDev" step="0.05" value="0.2">
+                </div>
+
+                <h3>Type de simulation :</h3>
+                <div>
+                    <input type="radio" id="simNormale" name="typeSimulation" value="normale" checked>
+                    <label for="simNormale">Simulation normale (durée fixe)</label>
+                </div>
+                <div>
+                    <input type="radio" id="simMort" name="typeSimulation" value="mort">
+                    <label for="simMort">Simulation jusqu'à la première mort</label>
+                </div>
+
+                <br>
+                <button type="submit">Lancer la simulation</button>
+                <button type="button" id="skip">Passer les simulations</button>
+            </form>
+        </div>
+
+        <div id="chart-container">
+            <canvas id="normalDistributionChart"></canvas>
+        </div>
+
+        <div id="screen"></div>
+
+        <div id="journal"
+            style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;">
+            <h3>Journal de la simulation :</h3>
+        </div>
+
+        <script>
+
+        //Afficher le boutton passer les simulations apres avoir cliqué sur lancer la simulation
+        let skip = document.getElementById('skip');
+        let start = document.querySelector('button[type="submit"]');
+
+        skip.style.display = 'none';
+
+        start.addEventListener('click', function() {
+            skip.style.display = 'block';
+        });
+
+
+
+        // Gestion de l'affichage des paramètres en fonction du choix
+        document.querySelectorAll('input[name="distribution"]').forEach(input => {
+            input.addEventListener('change', function() {
+                const normaleParams = document.getElementById("normaleParams");
+                if (this.value === "normale") {
+                    normaleParams.style.display = "block";
+                } else {
+                    normaleParams.style.display = "none";
+                }
+            });
+        });
+
+        // Gestion du formulaire
+        document.getElementById('simulationForm').onsubmit = function(e) {
+            e.preventDefault();
+
+            // Récupération des valeurs
+            const nbSimulation = parseInt(document.getElementById('nbSimulation').value);
+            const nbEtages = parseInt(document.getElementById('nbEtages').value);
+            const nbJours = parseInt(document.getElementById('nbJours').value);
+            const distribution = document.querySelector('input[name="distribution"]:checked').value;
+            const mean = parseFloat(document.getElementById("mean").value);
+            const stdDevFront = parseFloat(document.getElementById("stdDev").value);
+
+            if (isNaN(nbSimulation) || isNaN(nbEtages) || nbSimulation < 1 || nbEtages < 1) {
+                alert("Veuillez entrer des valeurs valides.");
+                return;
+            }
+
+            console.log(`Nombre de simulations : ${nbSimulation}, Nombre d'étages : ${nbEtages}`);
+            console.log(`Distribution choisie : ${distribution}`);
+
+            if (distribution === "normale") {
+                console.log(`Moyenne : ${mean}, Écart-type : ${stdDev}`);
+            }
+
+           
+           
+        };
+
+        //Chart.js
+
+        let chart; // Stocke le graphique pour mise à jour
+
+// Met à jour le graphique en fonction de la moyenne et de l'écart-type
+function updateChart() {
+    const mean = parseFloat(document.getElementById("mean").value);
+    const stdDev = parseFloat(document.getElementById("stdDev").value);
+
+    if (isNaN(mean) || isNaN(stdDev) || stdDev <= 0) return;
+
+    const labels = [];
+    const data = [];
+    const colors = [];
+
+    for (let x = mean - 3 * stdDev; x <= mean + 3 * stdDev; x += 0.1) {
+        labels.push(x.toFixed(2));
+        let prob = gaussian(x, mean, stdDev);
+        data.push(prob);
+
+        // 🎨 Détermine la couleur en fonction de 0.5
+        if (x < 0.5) {
+            colors.push("green"); // Gentil (🟢)
+        } else {
+            colors.push("red"); // Méchant (🔴)
+        }
+    }
+
+    const ctx = document.getElementById("normalDistributionChart").getContext("2d");
+
+    if (chart) chart.destroy(); // Supprime l'ancien graphique
+
+    chart = new Chart(ctx, {
+        type: "bar", // Utilisation d'un histogramme coloré
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Distribution des personnages",
+                data: data,
+                backgroundColor: colors, // Applique les couleurs 🟥🟩
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: { title: { display: true, text: "Valeurs" } },
+                y: { title: { display: true, text: "Densité de probabilité" } }
+            }
+        }
+    });
+}
+
+// Fonction pour calculer la densité de probabilité d'une loi normale
+function gaussian(x, mean, stdDev) {
+    return (1 / (stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-((x - mean) ** 2) / (2 * stdDev ** 2));
+}
+
+// Écoute les changements sur Mean et StdDev pour mettre à jour le graphique
+document.getElementById("mean").addEventListener("input", updateChart);
+document.getElementById("stdDev").addEventListener("input", updateChart);
+document.querySelector('input[name="distribution"]').addEventListener("change", function () {
+    if (this.value === "normale") {
+        updateChart();
+    } else if (chart) {
+        chart.destroy(); // Supprime le graphique si on repasse à Uniforme
+    }
+});
+
+
+       
+    </script>
+
+    </body>
+</html>

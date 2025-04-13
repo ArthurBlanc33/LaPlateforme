@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Analyseur de Simulation</title>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    h1 { color: #333; }
+    input[type="file"] { margin-bottom: 1rem; }
+    pre { background: #f4f4f4; padding: 1rem; border-radius: 5px; }
+    canvas { max-width: 800px; margin-top: 2rem; }
+    .error { color: red; font-weight: bold; }
+    .status { font-style: italic; color: #666; }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+        <li><a href="index.html">Simulation de la Tour</a></li>
+        <li><a href="analyse.html">Analyse de la Tour</a></li>
+    
+    </ul>
+</nav>
+
+  <h1>Analyse de la Simulation</h1>
+  <label>Simulation CSV : <input type="file" id="simulationCSV" accept=".csv"></label><br>
+  <label>Événements CSV : <input type="file" id="evenementsCSV" accept=".csv"></label><br>
+  <button onclick="analyser()">Analyser</button>
+
+  
+
+  
+  <p id="status" class="status"></p>
+
+  <h2>Changements d'état :</h2>
+  <pre id="resultat"></pre>
+  
+  <h2>Évolution des populations :</h2>
+  <canvas id="courbeEtats"></canvas>
+
+
+
+  <script>
+    function updateStatus(message) {
+      document.getElementById("status").textContent = message;
+    }
+    
+    function analyser() {
+      const simFile = document.getElementById("simulationCSV").files[0];
+      const evtFile = document.getElementById("evenementsCSV").files[0];
+
+      if (!simFile) {
+        alert("Veuillez fournir au moins le fichier de simulation CSV.");
+        return;
+      }
+      
+      updateStatus("Analyse en cours...");
+
+      // Lecture du fichier de simulation
+      Papa.parse(simFile, {
+        header: true,
+        dynamicTyping: true,
+        encoding: "UTF-8",
+        skipEmptyLines: true,
+        complete: function(results) {
+          console.log("Données de simulation:", results);
+
+          if (results.errors.length > 0) {
+            console.error("Erreurs simulation:", results.errors);
+            updateStatus("Erreur lors de la lecture du fichier de simulation");
+            return;
+          }
+          
+          const simulationData = results.data.filter(row => 
+            row && row.ID !== undefined && row.Jour !== undefined && 
+            (row.État !== undefined || row.Etat !== undefined)
+          );
+
+          if (simulationData.length === 0) {
+            updateStatus("Aucune donnée valide dans le fichier de simulation");
+            return;
+          }
+
+          // Si pas de fichier d'événements, continuer avec un tableau vide
+          if (!evtFile) {
+            const sample = simulationData[0];
+            const etatField = sample.hasOwnProperty('État') ? 'État' : 
+                             sample.hasOwnProperty('Etat') ? 'Etat' : 'etat';
+            afficherAnalyse(simulationData, [], etatField);
+            return;
+          }
+
+          // Sinon, lire le fichier d'événements comme avant
+          Papa.parse(evtFile, {
+            header: true,
+            dynamicTyping: true,
+            encoding: "UTF-8",
+            skipEmptyLines: true,
+            complete: function(results) {
+              console.log("Données événements:", results);
+
+              const eventData = results.data.filter(row =>
+                row && row.Type && row.AncienEtat && row.NouveauEtat
+              );
+
+              const sample = simulationData[0];
+              const etatField = sample.hasOwnProperty('État') ? 'État' : 
+                              sample.hasOwnProperty('Etat') ? 'Etat' : 'etat';
+
+              afficherAnalyse(simulationData, eventData, etatField);
+            }
+          });
+        }
+      });
+    }
+
+    function afficherAnalyse(sim, events, etatField) {
+      try {
+        // Analyse des états par jour
+        const etatsParJour = {};
+        const vivantsParJour = {};
+        
+        // Comptage initial des vivants
+        const joursUniques = [...new Set(sim.map(row => row.Jour))];
+        const jourInitial = Math.min(...joursUniques);
+        const vivantsInitial = new Set(sim.filter(row => row.Jour === jourInitial).map(row => row.ID)).size;
+        
+        // Compter les vivants par jour (vie > 0)
+        sim.forEach(row => {
+          const jour = row.Jour;
+          const etat = (row[etatField] || row.Etat || "").toLowerCase();
+          const vie = row.Vie;
+          
+          if (!etatsParJour[jour]) {
+            etatsParJour[jour] = { 
+              gentil: 0, 
+              mechant: 0,
+              gourou: 0,  // Ajout du compteur pour les gourous
+              disciple: 0 // Ajout du compteur pour les disciples
+            };
+            vivantsParJour[jour] = new Set();
+          }
+          
+          if (vie > 0) {
+            vivantsParJour[jour].add(row.ID);
+          }
+          
+          // Mise à jour des compteurs pour chaque état
+          if (etat === "gentil" || etat === "mechant" || etat === "gourou" || etat === "disciple") {
+            etatsParJour[jour][etat]++;
+          }
+        });
+
+        // Calculer le nombre final de morts
+        const jourFinal = Math.max(...joursUniques);
+        const vivantsFinal = vivantsParJour[jourFinal].size;
+        const morts = vivantsInitial - vivantsFinal;
+
+        // Comptage des changements d'état
+        let gentilToMechant = 0;
+        let mechantToGentil = 0;
+        
+        events.forEach(e => {
+          if (e.Type === "Changement d'état" || e.Type === "Changement d'etat") {
+            const ancien = (e.AncienEtat || "").toLowerCase();
+            const nouveau = (e.NouveauEtat || "").toLowerCase();
+            
+            if (ancien === "gentil" && nouveau === "mechant") gentilToMechant++;
+            if (ancien === "mechant" && nouveau === "gentil") mechantToGentil++;
+          }
+        });
+
+        // Affichage des statistiques
+        const res = `👥 Personnages au début : ${vivantsInitial}
+☠️ Morts : ${morts}
+❤️ Survivants : ${vivantsFinal}
+🔄 Gentil → Méchant : ${gentilToMechant}
+🔄 Méchant → Gentil : ${mechantToGentil}`;
+        document.getElementById("resultat").textContent = res;
+
+        // Création de la courbe d'évolution
+        const jours = Object.keys(etatsParJour).map(j => parseInt(j)).sort((a, b) => a - b);
+        const dataGentils = jours.map(j => etatsParJour[j]?.gentil || 0);
+        const dataMechants = jours.map(j => etatsParJour[j]?.mechant || 0);
+        const dataGourous = jours.map(j => etatsParJour[j]?.gourou || 0);
+        const dataDisciples = jours.map(j => etatsParJour[j]?.disciple || 0);
+        const dataVivants = jours.map(j => vivantsParJour[j]?.size || 0);
+
+        new Chart(document.getElementById("courbeEtats"), {
+          type: 'line',
+          data: {
+            labels: jours,
+            datasets: [
+              {
+                label: 'Vivants',
+                data: dataVivants,
+                borderColor: 'blue',
+                fill: false,
+                borderWidth: 2
+              },
+              {
+                label: 'Gentils',
+                data: dataGentils,
+                borderColor: 'green',
+                fill: false
+              },
+              {
+                label: 'Méchants',
+                data: dataMechants,
+                borderColor: 'red',
+                fill: false
+              },
+              {
+                label: 'Gourous',
+                data: dataGourous,
+                borderColor: 'purple',
+                fill: false,
+                borderWidth: 2
+              },
+              {
+                label: 'Disciples',
+                data: dataDisciples,
+                borderColor: 'magenta',
+                fill: false,
+                borderWidth: 2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Évolution des populations par jour'
+              },
+              legend: {
+                display: true,
+                position: 'top'
+              }
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: 'Jour'
+                }
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: 'Nombre de personnages'
+                },
+                beginAtZero: true
+              }
+            }
+          }
+        });
+        
+        updateStatus("Analyse terminée!");
+      } catch (error) {
+        document.getElementById("resultat").innerHTML = `<div class="error">Erreur : ${error.message}</div>`;
+        console.error("Erreur d'analyse:", error);
+        updateStatus("Une erreur s'est produite.");
+      }
+    }
+  </script>
+</body>
+</html>

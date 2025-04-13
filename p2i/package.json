@@ -1,0 +1,18 @@
+{
+  "name": "p2i",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "canvas": "^3.1.0",
+    "chartjs-node-canvas": "^4.1.6",
+    "mathjs": "^14.2.1",
+    "papaparse": "^5.5.2"
+  }
+}

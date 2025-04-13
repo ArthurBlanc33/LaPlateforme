@@ -1,0 +1,106 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
+}
+.container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+input {
+    padding: 8px;
+    font-size: 16px;
+    margin-right: 10px;
+}
+button {
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #45a049;
+}
+
+#screen {
+    border: 1px solid black;
+    padding: 10px;
+    width: 300px;
+    min-height: 300px;
+}
+.etage {
+    border: 1px solid blue;
+    margin: 5px;
+    padding: 10px;
+    text-align: center;
+}
+
+.perso {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5px;
+    font-size: 12px;
+    color: white;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+.gentil {
+    background-color: green;
+}
+.mechant {
+    background-color: red;
+}
+
+.gourou {
+    background-color: purple;
+    
+}
+
+.disciple {
+    background-color: rgb(204, 1, 204);
+    
+
+}
+
+/* Styling for the gourou character */
+.perso.gourou {
+    background-color: purple;
+    color: white;
+    border: 2px solid gold;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+  
+  /* Style for the disciple character (followers of the gourou) */
+  .perso.disciple {
+    background-color: mediumpurple;
+    color: white;
+    border: 1px solid purple;
+  }
+
+/* Ajout du style pour les options de type de simulation */
+.type-simulation-options {
+    margin: 1rem 0;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.type-simulation-options div {
+    margin: 0.5rem 0;
+}
+
+input[type="radio"] {
+    margin-right: 0.5rem;
+}

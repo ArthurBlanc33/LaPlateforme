@@ -1,0 +1,248 @@
+console.log("salut");
+
+const readline = require('readline').createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+readline.question('Entrez le nombre d\'étages souhaité : ', (input) => {
+    let nbetages = parseInt(input) || 10;
+    console.log(`Nombre d'étages : ${nbetages}`);
+   
+    readline.close();
+});
+
+
+
+
+//Simulation
+
+class Personnage {
+    constructor(etat, faim) {
+        this.etat = etat;
+        this.faim = faim;
+    }
+    manger(valeurrepas) {
+        return this.faim -= valeurrepas
+    }
+}
+
+function getRandomInt(max) {
+    return Math.floor(Math.random() * max);
+}
+
+console.log(getRandomInt(2));
+
+
+class Tour {
+    constructor(NbNiveau) {
+        this.NbNiveau = NbNiveau;
+        this.Niveaux = Array.from({ length: NbNiveau }, () => []);
+    }
+
+    afficherTour() {
+        let i = 1; // Numérotation des étages à partir de 1
+        this.Niveaux.forEach(element => {
+            console.log("-------------");
+            console.log("Étage " + i);
+
+            if (element.length !== 0) {
+                console.log("Personnages :");
+                element.forEach(personnage => {
+                    console.log(` - État : ${personnage.etat}, Faim : ${personnage.faim}`);
+                });
+            } else {
+                console.log("Aucun personnage à cet étage.");
+            }
+
+            console.log("-------------");
+            console.log("");
+            i++;
+        });
+    }
+}
+
+
+
+
+
+const TourPrincipale = new Tour(nbetages);
+
+
+
+// Initialisation de la tour
+
+
+
+function CreationPerso(TourPrincipale) {
+    const Persos = [];
+    let nmbPerso = TourPrincipale.Niveaux.length * 2;
+    for (let i = 0; i < nmbPerso; i++) {
+
+        let perso;
+
+        if (getRandomInt(2) == 0) {
+            perso = new Personnage("gentil", getRandomInt(11))
+        }
+        else {
+            perso = new Personnage("méchant", getRandomInt(11))
+
+        }
+        Persos.push(perso);
+    }
+
+    return Persos;
+
+}
+
+
+// TourPrincipale.Niveaux[0].push(personnageUn);
+// function affichageparetage(TourPrincipale,nb) {
+//     console.log("Vous êtes au " + (nb) + " niveau")
+//     TourPrincipale.Niveaux[nb].forEach(personnage => {
+//         console.log(`Personnage : État = ${personnage.etat}, Faim = ${personnage.faim}`);
+
+//     });
+// }
+
+function Repartition(TourPrincipale) {
+    // Mélanger les personnages
+    const shuffledPersos = shuffle(Persos);
+
+    let i = 0;
+    for (let j = 0; j < TourPrincipale.NbNiveau; j++) {
+        // Ajouter les personnages au niveau `j`
+        TourPrincipale.Niveaux[j].push(shuffledPersos[i], shuffledPersos[i + 1]);
+        i += 2; // Passer aux prochains personnages
+    }
+}
+
+// Fonction pour mélanger un tableau
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]]; // Échange des éléments
+    }
+    return array;
+}
+
+
+
+
+function Simulation(TourPrincipale) {
+    
+    let nbtotalnouriture = Persos.length;
+    let Quantitenourriture = nbtotalnouriture;
+    console.log("quantité nourriture" + Quantitenourriture)
+    let hpnourriture = 1;
+    let hplostparjour = 1;
+    for (let nmbJour = 0; nmbJour < 15; nmbJour++) {
+
+        console.log("jour " + nmbJour)
+
+        if (nmbJour === 7) {
+            console.log("Semaine 1 passée, une nouvelle tour est créée avec les personnages mélangés.");
+
+            // Récupérer tous les personnages de la tour
+            let allCharacters = [];
+            TourPrincipale.Niveaux.forEach(level => {
+                allCharacters = allCharacters.concat(level);
+            });
+
+            // Vider les niveaux avant redistribution
+            TourPrincipale.Niveaux.forEach(level => level.length = 0);
+
+            // Appeler la fonction de répartition avec les personnages mélangés
+            Repartition(TourPrincipale, shuffle(allCharacters));
+        }
+        //Les étages
+        for (let index = 0; index < nbetages; index++) {
+
+            console.log("-------------------------------")
+            console.log("Etage numéro " + index)
+            console.log("-------------------------------")
+
+
+            // affichageparetage(TourPrincipale,index)
+            TourPrincipale.Niveaux[index].forEach(personnage => {
+
+
+
+                //Manger ou pas manger
+                if (Quantitenourriture >= 0) {
+                    console.log("manger")
+                    personnage.manger(hpnourriture)
+                    console.log(`Personnage : État = ${personnage.etat}, Faim = ${personnage.faim}`);
+                    Quantitenourriture -= 2;
+                }
+                else {
+
+                    console.log("pas manger")
+                    personnage.faim += 1;
+                    console.log(`Personnage : État = ${personnage.etat}, Faim = ${personnage.faim}`);
+                }
+
+                //Mourir
+
+                if (personnage.faim > 10) {
+                    console.log("Le personnage est mort");
+                    // Suppression du personnage du tableau
+                    TourPrincipale.Niveaux[index].splice(personnage, 1);
+                }
+
+                //Fin du jour
+
+                personnage.faim =-hplostparjour;
+                Quantitenourriture = nbtotalnouriture;
+
+
+                // règle de méchant ou pas 
+
+                // if (personnage.etat == 'méchant'){
+                //     // "se battre, voler de la nouriture ?"
+
+                //     if(personnage.faim > 7)
+
+
+                // }
+
+
+            });
+
+        }
+
+    }
+
+}
+
+
+let Persos = CreationPerso(TourPrincipale);
+Repartition(TourPrincipale);
+
+console.log("Personnages créés :", Persos);
+// TourPrincipale.afficherTour();
+Simulation(TourPrincipale);
+
+
+
+
+//Dom
+
+// Modifier la méthode afficherHTML pour inclure des images
+
+// console.log('boucle')
+// const screen = document.getElementById('screen');
+// screen.innerHTML = ''; // Clear previous content
+
+
+// this.Niveaux.forEach((etage, index) => {
+//     // Ajout d'une image pour chaque étage
+//     const imgHTML = `<img class="etage" src="url_de_ton_image.png" alt="Étage ${this.NbNiveau - index}" />`;
+
+//     // Insertion directe via innerHTML
+//     screen.innerHTML += imgHTML;
+// });
+
+
+
+
